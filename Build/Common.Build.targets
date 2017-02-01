@@ -3,8 +3,8 @@
   <Import Project="Common.Build.VSSDK.targets" Condition="$(UseVSSDK) or $(UseVSSDKTemplateOnly)" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" Condition="'$(Language)' == 'C++'" />
   <Import Project="Common.Build.Wix.targets" Condition="'$(Language)' == 'WiX'" />
-  <Import Project="$(TargetsPath)\MicroBuild.targets" />
-  
+  <Import Project="$(PackagesPath)\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets" />
+
   <ItemGroup>
     <FilesToSign Include="$(TargetPath)" />
   </ItemGroup>
