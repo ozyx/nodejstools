@@ -4,6 +4,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" Condition="'$(Language)' == 'C++'" />
   <Import Project="Common.Build.Wix.targets" Condition="'$(Language)' == 'WiX'" />
 
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" />
+  </ItemGroup>
+
   <!--
   Transforms ProjectReference2 items into references that will be built
   but are not used as build references.
