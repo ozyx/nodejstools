@@ -10,13 +10,14 @@ namespace TestAdapterTests {
         public void ConstructFullyQualifiedName_ValidInput() {
             //Arrange
             string testFile = "c:\\dummyWhatever.js";
+            string moduleName = "dummyWhatever";
             string testName = "myMochaTest";
             string testFramework = "mocha";
 
             //Act
             NodejsTestInfo testInfo = new NodejsTestInfo(testFile, testName, testFramework, 0, 0);
             //Assert
-            string expected = testFile + "::" + testName + "::" + testFramework;
+            string expected = moduleName + "::" + testName + "::" + testFramework;
             Assert.AreEqual(expected, testInfo.FullyQualifiedName);
             Assert.AreEqual(testName, testInfo.TestName);
             Assert.AreEqual(testFramework, testInfo.TestFramework);

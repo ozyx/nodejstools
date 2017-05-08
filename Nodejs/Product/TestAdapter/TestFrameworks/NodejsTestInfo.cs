@@ -24,13 +24,20 @@ namespace Microsoft.NodejsTools.TestAdapter.TestFrameworks {
                 throw new ArgumentException("Invalid fully qualified test name");
             }
             ModulePath = parts[0];
+            SetModuleName(ModulePath);
             TestName = parts[1];
             TestFramework = parts[2];
+        }
+
+        private void SetModuleName(string modulePath)
+        {
+            ModuleName = (string)System.IO.Path.GetFileName(modulePath).Split('.').GetValue(0);
         }
 
         public NodejsTestInfo(string modulePath, string testName, string testFramework, int line, int column)
         {
             ModulePath = modulePath;
+            SetModuleName(ModulePath);
             TestName = testName;
             TestFramework = testFramework;
             SourceLine = line;
@@ -39,10 +46,12 @@ namespace Microsoft.NodejsTools.TestAdapter.TestFrameworks {
 
         public string FullyQualifiedName {
             get {
-                return ModulePath + "::" + TestName + "::" + TestFramework;
+                return ModuleName + "::" + TestName + "::" + TestFramework;
             }
         }
         public string ModulePath { get; private set; }
+
+        public string ModuleName { get; private set; }
 
         public string TestName { get; private set; }
 
