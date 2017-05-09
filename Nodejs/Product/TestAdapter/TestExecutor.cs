@@ -154,8 +154,11 @@ namespace Microsoft.NodejsTools.TestAdapter {
             var fileToTests = new Dictionary<string, List<TestCase>>();
             var sourceToSettings = new Dictionary<string, NodejsProjectSettings>();
             NodejsProjectSettings projectSettings = null;
+
+            // Initialize supported TestCaseFilter parameters
             supportedPropertiesCache = new Dictionary<string, TestProperty>(StringComparer.OrdinalIgnoreCase);
             supportedPropertiesCache.Add("FullyQualifiedName", TestCaseProperties.FullyQualifiedName);
+            supportedPropertiesCache.Add("Name", TestCaseProperties.DisplayName);
 
             var filterExpression = runContext.GetTestCaseFilter(supportedPropertiesCache.Keys, (propertyName) =>
             {
@@ -172,14 +175,23 @@ namespace Microsoft.NodejsTools.TestAdapter {
                     fileToTests[test.CodeFilePath] = new List<TestCase>();
                 }
 
-                // Filter out test cases here 
-                if (null != filterExpression &&
-                    filterExpression.MatchTestCase(test, (propertyName) =>
+                // If TestCaseFilter was specified, only add TestCases matching the filter.
+                if (null != filterExpression)
+                {
+                    if (filterExpression.MatchTestCase(test, (propertyName) =>
+                     {
+                         TestProperty testProperty;
+                         var valid = supportedPropertiesCache.TryGetValue(propertyName, out testProperty);
+                         return test.GetPropertyValue(testProperty);
+                     }) == true)
                     {
-                        TestProperty testProperty;
-                        var valid = supportedPropertiesCache.TryGetValue(propertyName, out testProperty);
-                        return test.GetPropertyValue(testProperty);
-                    }) == true)
+                        fileToTests[test.CodeFilePath].Add(test);
+                        frameworkHandle.SendMessage(TestMessageLevel.Informational, 
+                                                    string.Format("TestCase \"{0}\" matches \"TestCaseFilter:{1}\"", 
+                                                    test.DisplayName, filterExpression.TestCaseFilterValue));
+                    }
+                }
+                else
                 {
                     fileToTests[test.CodeFilePath].Add(test);
                 }
