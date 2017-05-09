@@ -74,6 +74,7 @@ namespace Microsoft.NodejsTools.TestAdapter {
         private IFrameworkHandle _frameworkHandle;
         private TestResult _currentResult = null;
         private ResultObject _currentResultObject = null;
+        private static Dictionary<string, TestProperty> supportedPropertiesCache;
 
         public void Cancel() {
             //let us just kill the node process there, rather do it late, because VS engine process 
@@ -153,6 +154,15 @@ namespace Microsoft.NodejsTools.TestAdapter {
             var fileToTests = new Dictionary<string, List<TestCase>>();
             var sourceToSettings = new Dictionary<string, NodejsProjectSettings>();
             NodejsProjectSettings projectSettings = null;
+            supportedPropertiesCache = new Dictionary<string, TestProperty>(StringComparer.OrdinalIgnoreCase);
+            supportedPropertiesCache.Add("FullyQualifiedName", TestCaseProperties.FullyQualifiedName);
+
+            var filterExpression = runContext.GetTestCaseFilter(supportedPropertiesCache.Keys, (propertyName) =>
+            {
+                TestProperty testProperty = null;
+                supportedPropertiesCache.TryGetValue(propertyName, out testProperty);
+                return testProperty;
+            });
 
             // put tests into dictionary where key is their source file
             foreach (var test in tests)
@@ -161,7 +171,18 @@ namespace Microsoft.NodejsTools.TestAdapter {
                 {
                     fileToTests[test.CodeFilePath] = new List<TestCase>();
                 }
-                fileToTests[test.CodeFilePath].Add(test);
+
+                // Filter out test cases here 
+                if (null != filterExpression &&
+                    filterExpression.MatchTestCase(test, (propertyName) =>
+                    {
+                        TestProperty testProperty;
+                        var valid = supportedPropertiesCache.TryGetValue(propertyName, out testProperty);
+                        return test.GetPropertyValue(testProperty);
+                    }) == true)
+                {
+                    fileToTests[test.CodeFilePath].Add(test);
+                }
             }
 
             // where key is the file and value is a list of tests
