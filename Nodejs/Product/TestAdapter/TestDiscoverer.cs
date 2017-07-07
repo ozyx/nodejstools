@@ -147,12 +147,20 @@ namespace Microsoft.NodejsTools.TestAdapter {
                                                                            discoveredTest.SourceLine,
                                                                            entry.File));
                     }
-                    discoverySink.SendTestCase(
-                        new TestCase(qualifiedName, TestExecutor.ExecutorUri, projSource) {
-                            CodeFilePath = (fi != null) ? fi.Filename : filePath,
-                            LineNumber = (fi != null && fi.LineNumber.HasValue) ? fi.LineNumber.Value : discoveredTest.SourceLine,
-                            DisplayName = discoveredTest.TestName
-                        });
+
+                    var testcase = new TestCase(qualifiedName, TestExecutor.ExecutorUri, projSource)
+                    {
+                        CodeFilePath = (fi != null) ? fi.Filename : filePath,
+                        LineNumber = (fi != null && fi.LineNumber.HasValue) ? fi.LineNumber.Value : discoveredTest.SourceLine,
+                        DisplayName = discoveredTest.TestName
+                    };
+                    string traitStr = proj.GetPropertyValue("Trait");
+                    if(traitStr != string.Empty)
+                    {
+                        Trait trait = new Trait(traitStr, string.Empty);
+                        testcase.Traits.Add(trait);
+                    }
+                    discoverySink.SendTestCase(testcase);
 
                 }
                 logger.SendMessage(TestMessageLevel.Informational, string.Format(CultureInfo.CurrentCulture, "Processing finished for framework of {0}", testFx));
